@@ -14,10 +14,7 @@ Every record validates against canonical StartupRecord schema.
 from __future__ import annotations
 
 import asyncio
-import json
 import logging
-import os
-import re
 from dataclasses import dataclass
 from typing import Optional
 
@@ -36,7 +33,6 @@ from .research_papers import RateLimiter
 logger = logging.getLogger("frontieratlas.scrapers.startups")
 
 HF_API = "https://huggingface.co/api"
-GITHUB_API = "https://api.github.com"
 
 POPULAR_HF_TASK_FILTERS = [
     "",

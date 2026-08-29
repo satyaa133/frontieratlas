@@ -15,9 +15,7 @@ Validates 100% against JobRecord schema.
 from __future__ import annotations
 
 import asyncio
-import json
 import logging
-import re
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -26,9 +24,7 @@ from typing import Optional
 import aiohttp
 
 from ..models.schemas import JobContent, JobRecord, Source
-from ..resolver.entity_resolver import EntityResolver
 from ..utils.dates import SeenBeforeHeuristic, is_within_last_24h, normalize_date
-from .research_papers import RateLimiter
 
 logger = logging.getLogger("frontieratlas.scrapers.jobs")
 
