@@ -148,20 +148,6 @@ Features:
 
 ---
 
-## Google Sheets Automated Upload
-
-To automatically upload all 6 tabs into a public Google Sheet:
-
-```bash
-# Upload using a Google Cloud Service Account JSON key:
-python scripts/upload_to_sheets.py --sheet-name "FrontierAtlas Intelligence Graph" --creds path/to/service_account.json
-
-# Or update an existing Google Sheet by ID:
-python scripts/upload_to_sheets.py --sheet-id <SPREADSHEET_ID> --creds path/to/service_account.json
-```
-
----
-
 ## Running Tests
 
 All 22 unit and integration tests execute completely offline without network dependencies in < 0.5s:
