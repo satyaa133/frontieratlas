@@ -1,0 +1,998 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FrontierAtlas — Intelligence Graph</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<style>
+  :root {
+    /* Soothing & Subtle Twilight Palette */
+    --bg-base: #0B0E14;
+    --bg-surface: #101520;
+    --bg-elevated: #151B28;
+    --bg-card: rgba(18, 24, 38, 0.55);
+    --bg-card-hover: rgba(24, 32, 50, 0.7);
+    
+    --border-subtle: rgba(255, 255, 255, 0.06);
+    --border-soft: rgba(255, 255, 255, 0.12);
+    
+    --text-primary: #F1F5F9;
+    --text-secondary: #94A3B8;
+    --text-muted: #64748B;
+    --text-faint: #475569;
+    
+    /* Soothing Pastels & Tones */
+    --mint: #34D399;
+    --mint-soft: rgba(52, 211, 153, 0.12);
+    --mint-border: rgba(52, 211, 153, 0.25);
+    
+    --sage: #A7F3D0;
+    --ice-blue: #7DD3FC;
+    --ice-soft: rgba(125, 211, 252, 0.12);
+    
+    --periwinkle: #A5B4FC;
+    --periwinkle-soft: rgba(165, 180, 252, 0.12);
+    
+    --warm-amber: #FCD34D;
+    --warm-soft: rgba(252, 211, 77, 0.12);
+    
+    --rose-quartz: #FDA4AF;
+    
+    --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', monospace;
+    
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  
+  html, body {
+    background-color: var(--bg-base);
+    color: var(--text-primary);
+    font-family: var(--font-sans);
+    min-height: 100vh;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Soothing Ambient Radial Glows */
+  body::before {
+    content: "";
+    position: fixed;
+    top: -15%;
+    left: 20%;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(125, 211, 252, 0.035) 0%, transparent 70%);
+    filter: blur(60px);
+    pointer-events: none;
+    z-index: 0;
+  }
+  body::after {
+    content: "";
+    position: fixed;
+    top: 10%;
+    right: 15%;
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(circle, rgba(165, 180, 252, 0.03) 0%, transparent 70%);
+    filter: blur(60px);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  ::selection { background: rgba(125, 211, 252, 0.18); color: var(--ice-blue); }
+
+  /* ---------- Header ---------- */
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    background: rgba(11, 14, 20, 0.8);
+    border-bottom: 1px solid var(--border-subtle);
+    padding: 16px 36px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+  }
+  .brand-logo {
+    width: 32px;
+    height: 32px;
+    border-radius: 9px;
+    background: linear-gradient(135deg, rgba(125, 211, 252, 0.2) 0%, rgba(165, 180, 252, 0.2) 100%);
+    border: 1px solid rgba(125, 211, 252, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--ice-blue);
+  }
+  .brand-logo svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 2; }
+  .brand-name { font-weight: 700; font-size: 15.5px; letter-spacing: -0.01em; color: #FFFFFF; }
+  .brand-badge {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--border-subtle);
+    padding: 3px 9px;
+    border-radius: 20px;
+  }
+
+  .header-meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .fresh-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--mint);
+    background: var(--mint-soft);
+    border: 1px solid var(--mint-border);
+    padding: 5px 12px;
+    border-radius: 20px;
+  }
+  .fresh-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--mint);
+    animation: gentlePulse 2.5s ease-in-out infinite;
+  }
+  @keyframes gentlePulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(1.2); }
+  }
+
+  /* ---------- Hero & Graph Section ---------- */
+  .hero-section {
+    max-width: 1320px;
+    margin: 0 auto;
+    padding: 40px 36px 24px;
+    display: grid;
+    grid-template-columns: 1.15fr 0.85fr;
+    gap: 36px;
+    align-items: center;
+    position: relative;
+    z-index: 1;
+  }
+
+  .hero-intro h1 {
+    font-size: 34px;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    line-height: 1.25;
+    color: #FFFFFF;
+  }
+  .hero-intro h1 span {
+    color: var(--text-secondary);
+    font-weight: 500;
+  }
+  .hero-intro p {
+    font-size: 14.5px;
+    line-height: 1.65;
+    color: var(--text-secondary);
+    margin-top: 12px;
+    max-width: 500px;
+  }
+
+  /* Metric Cards */
+  .metrics-row {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 12px;
+    margin-top: 28px;
+  }
+  .metric-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 14px 16px;
+    backdrop-filter: blur(12px);
+    transition: all 0.2s ease;
+  }
+  .metric-card:hover {
+    background: var(--bg-card-hover);
+    border-color: var(--border-soft);
+    transform: translateY(-2px);
+  }
+  .metric-num {
+    font-family: var(--font-mono);
+    font-size: 21px;
+    font-weight: 600;
+    color: #FFFFFF;
+    letter-spacing: -0.02em;
+  }
+  .metric-num.highlight-mint { color: var(--mint); }
+  .metric-label {
+    font-size: 11.5px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    margin-top: 4px;
+  }
+
+  /* Graph Canvas Card */
+  .graph-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    padding: 18px 20px;
+    position: relative;
+    backdrop-filter: blur(16px);
+  }
+  .graph-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 6px;
+  }
+  svg.network-svg {
+    width: 100%;
+    height: 260px;
+    display: block;
+  }
+  .graph-edge { stroke: rgba(255, 255, 255, 0.08); stroke-width: 1.5; fill: none; }
+  .graph-edge.active {
+    stroke: var(--ice-blue);
+    stroke-opacity: 0.55;
+    stroke-dasharray: 4 4;
+    animation: flowDash 2.5s linear infinite;
+  }
+  @keyframes flowDash { to { stroke-dashoffset: -16; } }
+  .node-title { font-family: var(--font-sans); font-size: 11px; font-weight: 600; fill: #FFFFFF; }
+  .node-subtitle { font-family: var(--font-mono); font-size: 9.5px; font-weight: 500; fill: var(--ice-blue); }
+
+  /* ---------- Content Container ---------- */
+  .main-wrapper {
+    max-width: 1320px;
+    margin: 0 auto;
+    padding: 0 36px 80px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Tab Navigation */
+  .nav-tabs {
+    display: flex;
+    gap: 6px;
+    border-bottom: 1px solid var(--border-subtle);
+    padding-bottom: 2px;
+    margin-bottom: 22px;
+    overflow-x: auto;
+  }
+  .nav-tab-btn {
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text-secondary);
+    font-family: var(--font-sans);
+    font-size: 13.5px;
+    font-weight: 500;
+    padding: 12px 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    position: relative;
+    transition: color 0.15s ease;
+  }
+  .nav-tab-btn:hover { color: #FFFFFF; }
+  .nav-tab-btn.active {
+    color: var(--ice-blue);
+    font-weight: 600;
+  }
+  .nav-tab-btn.active::after {
+    content: "";
+    position: absolute;
+    bottom: -3px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--ice-blue);
+    border-radius: 2px;
+  }
+  .badge-count {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-muted);
+    padding: 2px 7px;
+    border-radius: 12px;
+    transition: all 0.15s ease;
+  }
+  .nav-tab-btn.active .badge-count {
+    background: var(--ice-soft);
+    color: var(--ice-blue);
+  }
+
+  /* Controls & Search */
+  .control-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+  .search-wrapper {
+    position: relative;
+    width: 320px;
+  }
+  .search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 15px;
+    height: 15px;
+    color: var(--text-faint);
+  }
+  .input-search {
+    width: 100%;
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    padding: 9px 12px 9px 36px;
+    font-size: 13px;
+    font-family: var(--font-sans);
+    color: #FFFFFF;
+    outline: none;
+    transition: all 0.15s ease;
+  }
+  .input-search:focus {
+    border-color: var(--ice-blue);
+    background: var(--bg-surface);
+  }
+  .input-search::placeholder { color: var(--text-faint); }
+
+  .btn-upload {
+    background: rgba(125, 211, 252, 0.08);
+    border: 1px solid rgba(125, 211, 252, 0.25);
+    color: var(--ice-blue);
+    font-family: var(--font-sans);
+    font-size: 12.5px;
+    font-weight: 500;
+    padding: 8px 16px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    transition: all 0.15s ease;
+  }
+  .btn-upload:hover {
+    background: rgba(125, 211, 252, 0.15);
+    border-color: var(--ice-blue);
+  }
+
+  /* Table Card & Data */
+  .table-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    backdrop-filter: blur(16px);
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  thead {
+    background: rgba(255, 255, 255, 0.015);
+    border-bottom: 1px solid var(--border-subtle);
+  }
+  thead th {
+    text-align: left;
+    padding: 12px 16px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+  }
+  tbody td {
+    padding: 13px 16px;
+    border-bottom: 1px solid var(--border-subtle);
+    color: var(--text-secondary);
+    vertical-align: middle;
+  }
+  tbody tr { transition: background 0.1s ease; }
+  tbody tr:hover td {
+    background: rgba(255, 255, 255, 0.025);
+    color: var(--text-primary);
+  }
+  tbody tr:last-child td { border-bottom: none; }
+
+  td.cell-bold { color: #FFFFFF; font-weight: 500; }
+  td.cell-mono { font-family: var(--font-mono); font-size: 12px; }
+  
+  a.link-out {
+    color: var(--ice-blue);
+    text-decoration: none;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    transition: color 0.15s ease;
+  }
+  a.link-out:hover { color: #FFFFFF; text-decoration: underline; }
+
+  /* Soft Pastel Tag Pills */
+  .tag-pill {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 10.5px;
+    font-weight: 500;
+    font-family: var(--font-mono);
+    letter-spacing: 0.02em;
+  }
+  .tag-pill.pill-mint { background: var(--mint-soft); color: var(--mint); border: 1px solid var(--mint-border); }
+  .tag-pill.pill-amber { background: var(--warm-soft); color: var(--warm-amber); border: 1px solid rgba(252, 211, 77, 0.25); }
+  .tag-pill.pill-periwinkle { background: var(--periwinkle-soft); color: var(--periwinkle); border: 1px solid rgba(165, 180, 252, 0.25); }
+  .tag-pill.pill-neutral { background: rgba(255, 255, 255, 0.04); color: var(--text-secondary); border: 1px solid var(--border-subtle); }
+  .star-badge { color: var(--warm-amber); font-family: var(--font-mono); font-weight: 500; }
+
+  /* Pagination Bar */
+  .page-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background: rgba(255, 255, 255, 0.01);
+    border-top: 1px solid var(--border-subtle);
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+  .page-controls {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+  .btn-page {
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    color: var(--text-primary);
+    font-size: 11.5px;
+    font-weight: 500;
+    padding: 5px 10px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .btn-page:hover:not(:disabled) {
+    border-color: var(--ice-blue);
+    color: var(--ice-blue);
+  }
+  .btn-page:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+
+  /* Empty State / Dropzone */
+  .soothing-dropzone {
+    border: 2px dashed var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 70px 24px;
+    text-align: center;
+    background: rgba(16, 21, 32, 0.4);
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .soothing-dropzone:hover, .soothing-dropzone.dragover {
+    border-color: var(--ice-blue);
+    background: rgba(125, 211, 252, 0.04);
+  }
+  .drop-icon-circle {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: rgba(125, 211, 252, 0.08);
+    border: 1px solid rgba(125, 211, 252, 0.2);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 14px;
+    color: var(--ice-blue);
+  }
+  .drop-main-title { font-size: 15px; font-weight: 600; color: #FFFFFF; margin-bottom: 5px; }
+  .drop-sub-text { font-size: 13px; color: var(--text-secondary); max-width: 440px; margin: 0 auto; line-height: 1.5; }
+  .drop-sub-text code { color: var(--ice-blue); font-family: var(--font-mono); background: rgba(125, 211, 252, 0.08); padding: 2px 6px; border-radius: 4px; }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<header>
+  <div class="brand">
+    <div class="brand-logo">
+      <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+    </div>
+    <span class="brand-name">FrontierAtlas</span>
+    <span class="brand-badge">Intelligence Graph</span>
+  </div>
+  <div class="header-meta">
+    <div class="fresh-pill"><span class="fresh-dot"></span>24h Sliding Freshness</div>
+  </div>
+</header>
+
+<!-- Hero Section -->
+<div class="hero-section">
+  <div class="hero-intro">
+    <h1>The Live Map of AI Breakthroughs <span>& Companies.</span></h1>
+    <p>Continuous intelligence graph tracking AI startups, models, research papers, and fresh career opportunities across thousands of real sources.</p>
+    
+    <div class="metrics-row">
+      <div class="metric-card">
+        <div class="metric-num highlight-mint" id="stat-startups">0</div>
+        <div class="metric-label">Startups</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-num" id="stat-products">0</div>
+        <div class="metric-label">Products</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-num" id="stat-papers">0</div>
+        <div class="metric-label">Papers</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-num" id="stat-jobs">0</div>
+        <div class="metric-label">Fresh Jobs</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-num" id="stat-news">0</div>
+        <div class="metric-label">Fresh News</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="graph-card">
+    <div class="graph-card-header">
+      <span>Knowledge Graph</span>
+      <span style="color:var(--ice-blue);font-family:var(--font-mono)">● RESOLVED</span>
+    </div>
+    <svg class="network-svg" viewBox="0 0 520 260" preserveAspectRatio="xMidYMid meet"></svg>
+  </div>
+</div>
+
+<!-- Main Table Content -->
+<div class="main-wrapper">
+  <div class="nav-tabs" id="nav-tabs-container"></div>
+
+  <div class="control-bar">
+    <div class="search-wrapper">
+      <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" class="input-search" id="input-search" placeholder="Search records in this vertical...">
+    </div>
+    <div>
+      <label class="btn-upload">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        Upload CSV
+        <input type="file" accept=".csv" id="csv-file-input" style="display:none">
+      </label>
+    </div>
+  </div>
+
+  <div id="table-display-area"></div>
+</div>
+
+<script>
+/* ---------------- State Store ---------------- */
+const STORE = {
+  startups: [],
+  products: [],
+  papers: [],
+  jobs: [],
+  news: [],
+  mapping: [],
+};
+
+const TABS = [
+  { id:"startups", label:"Startups", file:"startups.csv" },
+  { id:"products", label:"Products", file:"products.csv" },
+  { id:"papers", label:"Research Papers", file:"research_papers.csv" },
+  { id:"jobs", label:"Jobs", file:"jobs.csv" },
+  { id:"news", label:"News", file:"news.csv" },
+  { id:"mapping", label:"Entity Mapping Log", file:"entity_mapping_log.csv" },
+];
+
+let activeTab = "startups";
+let filterText = "";
+let currentPage = 1;
+const PAGE_SIZE = 50;
+
+/* ---------------- Formatting Helpers ---------------- */
+function formatTimestamp(iso) {
+  if (!iso) return "—";
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return String(iso);
+  try {
+    return d.toISOString().replace("T", " ").slice(0, 16) + " UTC";
+  } catch (e) {
+    return String(iso);
+  }
+}
+
+function timeSince(iso) {
+  if (!iso) return "—";
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return String(iso);
+  const diffMs = Date.now() - d.getTime();
+  if (diffMs < 0) return "just now";
+  const h = Math.floor(diffMs / 3600000);
+  if (h < 1) return "< 1h ago";
+  if (h === 1) return "1h ago";
+  return `${h}h ago`;
+}
+
+function parseAuthors(raw) {
+  if (!raw) return "—";
+  if (Array.isArray(raw)) return raw.join(", ");
+  if (typeof raw === "string" && raw.startsWith("[")) {
+    try { return JSON.parse(raw).join(", "); } catch (e) {}
+  }
+  return String(raw);
+}
+
+/* ---------------- UI Renderers ---------------- */
+function updateMetrics() {
+  document.getElementById("stat-startups").textContent = (STORE.startups || []).length.toLocaleString();
+  document.getElementById("stat-products").textContent = (STORE.products || []).length.toLocaleString();
+  document.getElementById("stat-papers").textContent = (STORE.papers || []).length.toLocaleString();
+  document.getElementById("stat-jobs").textContent = (STORE.jobs || []).length.toLocaleString();
+  document.getElementById("stat-news").textContent = (STORE.news || []).length.toLocaleString();
+}
+
+function renderTabs() {
+  const container = document.getElementById("nav-tabs-container");
+  container.innerHTML = TABS.map(t => `
+    <button class="nav-tab-btn ${t.id === activeTab ? 'active' : ''}" data-tab="${t.id}">
+      ${t.label}
+      <span class="badge-count">${(STORE[t.id] || []).length.toLocaleString()}</span>
+    </button>
+  `).join("");
+
+  container.querySelectorAll(".nav-tab-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      activeTab = btn.dataset.tab;
+      filterText = "";
+      currentPage = 1;
+      const searchBox = document.getElementById("input-search");
+      if (searchBox) searchBox.value = "";
+      
+      container.querySelectorAll(".nav-tab-btn").forEach(b => b.classList.toggle("active", b.dataset.tab === activeTab));
+      renderTable();
+      renderGraph();
+    });
+  });
+}
+
+function getFilteredRows() {
+  const rows = STORE[activeTab] || [];
+  const q = filterText.trim().toLowerCase();
+  if (!q) return rows;
+  return rows.filter(r => JSON.stringify(r).toLowerCase().includes(q));
+}
+
+function renderTable() {
+  const container = document.getElementById("table-display-area");
+  const tabMeta = TABS.find(t => t.id === activeTab);
+  const totalCount = (STORE[activeTab] || []).length;
+  const filtered = getFilteredRows();
+
+  if (totalCount === 0) {
+    container.innerHTML = `
+      <div class="soothing-dropzone" id="drop-zone-element">
+        <div class="drop-icon-circle">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        </div>
+        <div class="drop-main-title">No records loaded for ${tabMeta.label}</div>
+        <div class="drop-sub-text">Click <b>Upload CSV</b> above or drop <code>output/${tabMeta.file}</code> here to view data.</div>
+      </div>
+    `;
+    bindDropzone();
+    return;
+  }
+
+  if (filtered.length === 0) {
+    container.innerHTML = `
+      <div class="table-card">
+        <div style="padding: 48px; text-align: center; color: var(--text-secondary); font-size: 13.5px;">
+          No matching records for "<strong>${filterText}</strong>"
+        </div>
+      </div>
+    `;
+    return;
+  }
+
+  const totalPages = Math.ceil(filtered.length / PAGE_SIZE) || 1;
+  currentPage = Math.min(Math.max(1, currentPage), totalPages);
+  const startIdx = (currentPage - 1) * PAGE_SIZE;
+  const pageRows = filtered.slice(startIdx, startIdx + PAGE_SIZE);
+
+  let headers = [];
+  let rowsHtml = "";
+
+  if (activeTab === "startups") {
+    headers = ["Entity Name", "Employees", "Source Directory", "Collected At"];
+    rowsHtml = pageRows.map(r => `
+      <tr>
+        <td class="cell-bold">${r.entityName || "—"}</td>
+        <td class="cell-mono">${r.employeeCount ? Number(r.employeeCount).toLocaleString() : "—"}</td>
+        <td><a class="link-out" href="${r.url || '#'}" target="_blank">${r.source || "—"} ↗</a></td>
+        <td class="cell-mono">${formatTimestamp(r.collectedAt)}</td>
+      </tr>
+    `).join("");
+  } else if (activeTab === "products") {
+    headers = ["Product / Space", "Startup / Creator", "Pricing Model", "Collected At"];
+    rowsHtml = pageRows.map(r => `
+      <tr>
+        <td class="cell-bold"><a class="link-out" style="color:#FFF" href="${r.url || '#'}" target="_blank">${r.productName || r.source || "—"} ↗</a></td>
+        <td class="cell-mono" style="color:var(--ice-blue)">${r.startupName || "—"}</td>
+        <td><span class="tag-pill ${r.pricingModel==='FREE'?'pill-mint':(r.pricingModel==='ENTERPRISE'?'pill-periwinkle':'pill-amber')}">${r.pricingModel || "FREE"}</span></td>
+        <td class="cell-mono">${formatTimestamp(r.collectedAt)}</td>
+      </tr>
+    `).join("");
+  } else if (activeTab === "papers") {
+    headers = ["Research Paper Title", "Authors", "GitHub Stars", "Published", "Source"];
+    rowsHtml = pageRows.map(r => `
+      <tr>
+        <td class="cell-bold" style="max-width:440px;">${r.title || "—"}</td>
+        <td style="max-width:260px; font-size:12px;">${parseAuthors(r.authors)}</td>
+        <td class="star-badge">${r.stars ? '★ ' + Number(r.stars).toLocaleString() : "—"}</td>
+        <td class="cell-mono">${formatTimestamp(r.published)}</td>
+        <td><a class="link-out" href="${r.paper_url || '#'}" target="_blank">arxiv.org ↗</a></td>
+      </tr>
+    `).join("");
+  } else if (activeTab === "jobs") {
+    headers = ["Company", "Job Title", "Workplace", "Role Category", "Freshness", "Source"];
+    rowsHtml = pageRows.map(r => `
+      <tr>
+        <td class="cell-bold" style="color:var(--ice-blue);">${r.company || "—"}</td>
+        <td><a class="link-out" style="color:#FFF" href="${r.url || '#'}" target="_blank">${r.title || "—"} ↗</a></td>
+        <td><span class="tag-pill ${r.is_remote?'pill-amber':'pill-neutral'}">${r.is_remote ? 'REMOTE' : 'ONSITE'}</span></td>
+        <td class="cell-mono" style="font-size:11.5px;">${r.role_family || "Engineering"}</td>
+        <td><span class="tag-pill pill-mint">${timeSince(r.date)}</span></td>
+        <td class="cell-mono">${r.source || "—"}</td>
+      </tr>
+    `).join("");
+  } else if (activeTab === "news") {
+    headers = ["Headline", "Source Feed", "Published"];
+    rowsHtml = pageRows.map(r => `
+      <tr>
+        <td class="cell-bold"><a class="link-out" style="color:#FFF" href="${r.url || '#'}" target="_blank">${r.title || "—"} ↗</a></td>
+        <td class="cell-mono">${r.source || "—"}</td>
+        <td><span class="tag-pill pill-mint">${timeSince(r.date)}</span></td>
+      </tr>
+    `).join("");
+  } else if (activeTab === "mapping") {
+    headers = ["Raw Scraped Name", "Canonical Entity", "Type", "Method", "Confidence"];
+    rowsHtml = pageRows.map(r => {
+      const conf = typeof r.confidence === "number" ? r.confidence : Number(r.confidence || 0);
+      return `
+        <tr>
+          <td class="cell-mono">${r.raw_name || "—"}</td>
+          <td class="cell-bold" style="color:var(--ice-blue);">${r.canonical_name || "—"}</td>
+          <td class="cell-mono">${r.entity_type || "STARTUP"}</td>
+          <td><span class="tag-pill pill-neutral">${r.method || "exact"}</span></td>
+          <td class="cell-mono" style="font-weight:600; color:${conf>0.8?'var(--mint)':'var(--text-secondary)'}">${(conf * 100).toFixed(0)}%</td>
+        </tr>
+      `;
+    }).join("");
+  }
+
+  container.innerHTML = `
+    <div class="table-card">
+      <table>
+        <thead>
+          <tr>${headers.map(h => `<th>${h}</th>`).join("")}</tr>
+        </thead>
+        <tbody>
+          ${rowsHtml}
+        </tbody>
+      </table>
+      <div class="page-footer">
+        <span>Showing <strong>${startIdx + 1}–${Math.min(startIdx + PAGE_SIZE, filtered.length)}</strong> of <strong>${filtered.length.toLocaleString()}</strong> rows</span>
+        <div class="page-controls">
+          <button class="btn-page" id="btn-prev" ${currentPage===1?'disabled':''}>← Prev</button>
+          <span style="font-family:var(--font-mono);font-size:11.5px;padding:0 8px;">${currentPage} / ${totalPages}</span>
+          <button class="btn-page" id="btn-next" ${currentPage===totalPages?'disabled':''}>Next →</button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  document.getElementById("btn-prev")?.addEventListener("click", () => { currentPage--; renderTable(); });
+  document.getElementById("btn-next")?.addEventListener("click", () => { currentPage++; renderTable(); });
+}
+
+/* ---------------- Network Graph ---------------- */
+function renderGraph() {
+  const svg = document.querySelector("svg.network-svg");
+  if (!svg) return;
+
+  const sCount = STORE.startups.length;
+  const pCount = STORE.products.length;
+  const rCount = STORE.papers.length;
+  const jCount = STORE.jobs.length;
+
+  const sampleStartup = sCount > 0 ? (STORE.startups[0].entityName || "Startups") : "Startups";
+  const sampleProduct = pCount > 0 ? (STORE.products[0].startupName || "Products") : "Products";
+
+  const nodes = [
+    { id: "startup", x: 65,  y: 130, r: 28, label: sampleStartup.slice(0, 14), sub: `${sCount.toLocaleString()} ORGS`, color: "var(--mint)" },
+    { id: "product", x: 215, y: 65,  r: 23, label: sampleProduct.slice(0, 14), sub: `${pCount.toLocaleString()} PROD`, color: pCount > 0 ? "var(--ice-blue)" : "rgba(255,255,255,0.2)" },
+    { id: "paper",   x: 215, y: 195, r: 23, label: "Papers", sub: `${rCount.toLocaleString()} PAPERS`, color: rCount > 0 ? "var(--warm-amber)" : "rgba(255,255,255,0.2)" },
+    { id: "repo",    x: 390, y: 195, r: 21, label: "GitHub Stars", sub: rCount > 0 ? "★ verified" : "Stars", color: "var(--warm-amber)" },
+    { id: "job",     x: 390, y: 65,  r: 21, label: "Careers", sub: `${jCount.toLocaleString()} FRESH`, color: jCount > 0 ? "var(--mint)" : "rgba(255,255,255,0.2)" },
+  ];
+
+  const edges = [
+    { a: "startup", b: "product", live: pCount > 0 },
+    { a: "startup", b: "paper",   live: rCount > 0 },
+    { a: "paper",   b: "repo",    live: rCount > 0 },
+    { a: "product", b: "job",     live: jCount > 0 },
+  ];
+
+  const byId = Object.fromEntries(nodes.map(n => [n.id, n]));
+  const edgeSvg = edges.map(e => {
+    const a = byId[e.a], b = byId[e.b];
+    return `<path class="graph-edge ${e.live ? 'active' : ''}" d="M${a.x},${a.y} L${b.x},${b.y}"/>`;
+  }).join("");
+
+  const nodeSvg = nodes.map(n => `
+    <g>
+      <circle cx="${n.x}" cy="${n.y}" r="${n.r}" fill="var(--bg-elevated)" stroke="${n.color}" stroke-width="1.6"/>
+      <text class="node-title" x="${n.x}" y="${n.y + n.r + 14}" text-anchor="middle">${n.label}</text>
+      <text class="node-subtitle" x="${n.x}" y="${n.y + n.r + 26}" text-anchor="middle" fill="${n.color}">${n.sub}</text>
+    </g>
+  `).join("");
+
+  svg.innerHTML = edgeSvg + nodeSvg;
+}
+
+/* ---------------- File Processing ---------------- */
+function processCSVFile(file) {
+  if (!file || typeof Papa === 'undefined') return;
+
+  Papa.parse(file, {
+    header: true,
+    skipEmptyLines: true,
+    complete: (res) => {
+      const rows = res.data;
+      if (!rows || rows.length === 0) return;
+
+      const fname = (file.name || "").toLowerCase();
+      let target = activeTab;
+      if (fname.includes("startup")) target = "startups";
+      else if (fname.includes("product")) target = "products";
+      else if (fname.includes("paper") || fname.includes("research")) target = "papers";
+      else if (fname.includes("job")) target = "jobs";
+      else if (fname.includes("news")) target = "news";
+      else if (fname.includes("mapping") || fname.includes("entity")) target = "mapping";
+
+      if (target === "startups") {
+        STORE.startups = rows.map(r => ({
+          entityName: r["content.entityName"] || r.entityName || "—",
+          employeeCount: r["content.data.employeeCount"] || r.employeeCount,
+          source: r["source.name"] || r.source || "—",
+          url: r["source.url"] || r.url || "#",
+          collectedAt: r.collectedAt || r.collected_at,
+        }));
+      } else if (target === "products") {
+        STORE.products = rows.map(r => ({
+          productName: r["source.name"] || r.productName || "—",
+          startupName: r["content.startupName"] || r.startupName || "—",
+          pricingModel: r["content.pricingModel"] || r.pricingModel || "FREE",
+          source: r["source.name"] || r.source || "—",
+          url: r["source.url"] || r.url || "#",
+          collectedAt: r.collectedAt || r.collected_at,
+        }));
+      } else if (target === "papers") {
+        STORE.papers = rows.map(r => ({
+          title: r["content.title"] || r.title || "—",
+          authors: r["content.authors"] || r.authors,
+          paper_url: r["content.paper_url"] || r.paper_url || "#",
+          stars: Number(r["content.github_stars"] || r.stars || 0),
+          published: r["content.published_date"] || r.published,
+        }));
+      } else if (target === "jobs") {
+        STORE.jobs = rows.map(r => ({
+          company: r["content.company"] || r.company || "—",
+          title: r["content.title"] || r.title || "—",
+          is_remote: (r["content.is_remote"] || r.is_remote) === "true" || (r["content.is_remote"] || r.is_remote) === true,
+          role_family: r["content.role_family"] || r.role_family || "Engineering",
+          date: r["content.date"] || r.date,
+          url: r["content.url"] || r.url || "#",
+          source: r["source.name"] || r.source || "—",
+        }));
+      } else if (target === "news") {
+        STORE.news = rows.map(r => ({
+          title: r["content.title"] || r.title || "—",
+          url: r["content.url"] || r.url || "#",
+          source: r["source.name"] || r.source || "—",
+          date: r["content.published_date"] || r.date,
+        }));
+      } else if (target === "mapping") {
+        STORE.mapping = rows.map(r => ({
+          raw_name: r.raw_name || r.raw || "—",
+          canonical_name: r.canonical_name || r.canonical || "—",
+          entity_type: r.entity_type || r.type || "STARTUP",
+          method: r.method || "exact",
+          confidence: Number(r.confidence || 0),
+        }));
+      }
+
+      activeTab = target;
+      currentPage = 1;
+      updateMetrics();
+      renderTabs();
+      renderTable();
+      renderGraph();
+    }
+  });
+}
+
+function bindDropzone() {
+  const box = document.getElementById("drop-zone-element");
+  if (!box) return;
+  box.addEventListener("click", () => {
+    document.getElementById("csv-file-input")?.click();
+  });
+  box.addEventListener("dragover", (e) => { e.preventDefault(); box.classList.add("dragover"); });
+  box.addEventListener("dragleave", () => { box.classList.remove("dragover"); });
+  box.addEventListener("drop", (e) => {
+    e.preventDefault();
+    box.classList.remove("dragover");
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      processCSVFile(e.dataTransfer.files[0]);
+    }
+  });
+}
+
+/* ---------------- Event Listeners ---------------- */
+document.getElementById("csv-file-input")?.addEventListener("change", (e) => {
+  if (e.target.files && e.target.files[0]) {
+    processCSVFile(e.target.files[0]);
+  }
+});
+
+document.getElementById("input-search")?.addEventListener("input", (e) => {
+  filterText = e.target.value;
+  currentPage = 1;
+  renderTable();
+});
+
+// Boot UI
+updateMetrics();
+renderTabs();
+renderTable();
+renderGraph();
+</script>
+</body>
+</html>
