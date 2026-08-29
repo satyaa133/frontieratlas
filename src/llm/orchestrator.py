@@ -1,7 +1,7 @@
 """
 Phase III: Multi-Tier LLM Extraction Engine.
 
-- Fallback chain across providers: Gemini Flash -> Groq Llama 3 -> DeepSeek
+- Fallback chain across providers: Gemini Flash -> OpenAI ChatGPT (GPT-4o-mini)
 - Intelligent chunking so payloads never trigger 413s
 - Exponential backoff + jitter on 429s
 - Structured JSON-only output, validated against our Pydantic schemas
@@ -17,7 +17,7 @@ import json
 import logging
 import random
 from dataclasses import dataclass
-from typing import Any, Optional, Protocol
+from typing import Protocol
 
 logger = logging.getLogger("frontieratlas.llm")
 
