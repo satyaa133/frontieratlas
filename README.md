@@ -165,15 +165,6 @@ Test Coverage:
 
 ---
 
-## Building the Architecture Document
-
-To re-generate [`architecture.pdf`](./architecture.pdf):
-```bash
-python scripts/build_architecture_pdf.py
-```
-
----
-
 ## Repository Layout
 
 ```
@@ -193,9 +184,6 @@ frontieratlas/
 │   ├── jobs.csv
 │   ├── news.csv
 │   └── entity_mapping_log.csv
-├── scripts/
-│   ├── build_architecture_pdf.py      # ReportLab script generating architecture.pdf
-│   └── upload_to_sheets.py            # Automated gspread script publishing to Google Sheets
 ├── src/
 │   ├── main.py                        # CLI entry point orchestrating ingestion pipeline
 │   ├── models/
