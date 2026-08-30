@@ -91,12 +91,50 @@ pip install -r requirements.txt
 playwright install chromium
 ```
 
-### 3. Environment Variables (Optional)
-Set API keys if calling live LLM providers or raising GitHub API rate limits:
+### 3. API Key Configuration & Multi-Tier LLM Setup
+
+FrontierAtlas uses a **2-tier resilient LLM extraction architecture** (`src/llm/providers.py`):
+- **Tier 1 (Primary)**: **Google Gemini 3.6 Flash** (`GEMINI_API_KEY`) with a **1,000,000 token context window** for high-throughput semantic schema extraction.
+- **Tier 2 (Automatic Fallback)**: **OpenAI ChatGPT / GPT-4o-mini** (`OPENAI_API_KEY`) as an instant failover if Tier 1 encounters `HTTP 429` (rate limits) or `HTTP 413` (context limits).
+
+You can configure your API keys using any of the following **3 methods**:
+
+#### Method A: Using a `.env` file (Recommended)
+Copy the provided template and insert your keys:
+```bash
+cp .env.example .env
+```
+Open `.env` and add your keys:
+```env
+# Primary extraction provider (Gemini 3.6 Flash)
+GEMINI_API_KEY="AIzaSy..."
+
+# Fallback provider (OpenAI GPT-4o-mini)
+OPENAI_API_KEY="sk-proj-..."
+
+# Optional: Raises GitHub API limit from 60/hr to 5,000/hr
+GITHUB_TOKEN="ghp_..."
+```
+*(The pipeline automatically loads `.env` upon startup via `python-dotenv`).*
+
+#### Method B: Exporting Environment Variables in Terminal
 ```bash
 export GEMINI_API_KEY="your_gemini_api_key_here"
 export OPENAI_API_KEY="your_openai_api_key_here"
-export GITHUB_TOKEN="your_github_token_here"     # Raises GitHub rate limits from 60/hr to 5,000/hr
+export GITHUB_TOKEN="your_github_token_here"
+```
+
+#### Method C: Passing Directly in Code (`src/llm/providers.py`)
+If configuring programmatically in Python:
+```python
+from src.llm.providers import GeminiFlashProvider, OpenAIProvider
+from src.llm.orchestrator import LLMOrchestrator
+
+# Initialize providers with explicit API keys
+tier1 = GeminiFlashProvider(api_key="your_gemini_key", model="gemini-3.6-flash")
+tier2 = OpenAIProvider(api_key="your_openai_key", model="gpt-4o-mini")
+
+orchestrator = LLMOrchestrator(providers=[tier1, tier2])
 ```
 
 ---
@@ -150,7 +188,7 @@ Features:
 
 ## Running Tests
 
-All 22 unit and integration tests execute completely offline without network dependencies in < 0.5s:
+All 25 unit and integration tests execute completely offline without network dependencies in < 0.5s:
 
 ```bash
 pytest
@@ -172,6 +210,7 @@ frontieratlas/
 ├── README.md                          # Project documentation and execution guide
 ├── architecture.pdf                   # Phase VI production architecture design document
 ├── requirements.txt                   # Python dependencies
+├── .env.example                       # API key configuration template
 ├── .gitignore                         # Git ignore configuration
 ├── data/
 │   └── canonical_seed.json            # 50 known AI startups & aliases for Entity Resolution

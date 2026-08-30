@@ -16,7 +16,7 @@ from src.llm.orchestrator import (  # noqa: E402
     RateLimitError,
     RetryConfig,
 )
-from src.llm.providers import GeminiFlashProvider, OpenAIProvider, build_default_chain  # noqa: E402
+from src.llm.providers import GeminiFlashProvider, OpenAIProvider, _extract_json, build_default_chain  # noqa: E402
 
 
 class MockFailingProvider:
@@ -90,3 +90,21 @@ def test_build_default_chain():
     assert isinstance(chain[1], OpenAIProvider)
     assert chain[0].model == "gemini-3.6-flash"
     assert chain[1].model == "gpt-4o-mini"
+
+
+def test_extract_json_formats():
+    # 1. Pure JSON
+    assert _extract_json('{"key": "value"}') == {"key": "value"}
+
+    # 2. Markdown fenced json
+    fenced_json = '```json\n{"entity": "OpenAI", "count": 10}\n```'
+    assert _extract_json(fenced_json) == {"entity": "OpenAI", "count": 10}
+
+    # 3. Markdown fenced without json label
+    fenced_raw = '```\n{"model": "gpt-4o"}\n```'
+    assert _extract_json(fenced_raw) == {"model": "gpt-4o"}
+
+    # 4. Surrounded by conversational text
+    commentary = 'Here is the extracted payload:\n```json\n{"status": "ok"}\n```\nHope this helps!'
+    assert _extract_json(commentary) == {"status": "ok"}
+

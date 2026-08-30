@@ -21,6 +21,17 @@ import asyncio
 import json
 import logging
 import os
+import sys
+
+if __name__ == "__main__" and __package__ is None:
+    sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+    __package__ = "src"
+
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
 
 from .models.schemas import EntityMappingLogRecord
 from .resolver.entity_resolver import EntityResolver

@@ -13,20 +13,46 @@ from __future__ import annotations
 
 import json
 import os
+import re
 
 import aiohttp
+
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
 
 from .orchestrator import PayloadTooLargeError, ProviderUnavailableError, RateLimitError
 
 
 def _extract_json(text: str) -> dict:
-    """Strip markdown code fences if the model wrapped its JSON in them."""
+    """Robustly extracts JSON from raw LLM output, handling markdown fences and pre/post commentary."""
     text = text.strip()
-    if text.startswith("```"):
-        text = text.split("```")[1]
-        if text.startswith("json"):
-            text = text[4:]
-    return json.loads(text.strip())
+    # 1. Try direct parse
+    try:
+        return json.loads(text)
+    except json.JSONDecodeError:
+        pass
+
+    # 2. Extract from markdown code fences if present
+    match = re.search(r"```(?:json)?\s*(.*?)\s*```", text, re.DOTALL)
+    if match:
+        try:
+            return json.loads(match.group(1).strip())
+        except json.JSONDecodeError:
+            pass
+
+    # 3. Extract between first { and last }
+    first_brace = text.find("{")
+    last_brace = text.rfind("}")
+    if first_brace != -1 and last_brace > first_brace:
+        try:
+            return json.loads(text[first_brace : last_brace + 1])
+        except json.JSONDecodeError:
+            pass
+
+    return json.loads(text)
 
 
 class GeminiFlashProvider:
