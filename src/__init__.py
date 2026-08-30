@@ -1,0 +1,1 @@
+"""FrontierAtlas root package."""
